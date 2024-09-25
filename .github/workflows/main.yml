@@ -1,32 +1,40 @@
-name: Deploy to VPS
+name: Deploy to Hostinger VPS
 
 on:
   push:
     branches:
-      - main
+      - main  # Deploy whenever there is a push to the 'main' branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    - name: Install SSH key
-      uses: shimataro/ssh-key-action@v2
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.8.1
       with:
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        known_hosts: '157.173.218.79'
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Copy files via SSH
-      run: |
-        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ root@157.173.218.79:/path_to_your_project
+    - name: Install Node.js (or any other tech stack)
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'  # Specify the Node.js version if using Node.js
 
-    - name: SSH and execute deployment
+    - name: Install Dependencies
+      run: npm install  # Modify based on your project
+
+    - name: Build Application
+      run: npm run build  # If you need to build your project
+
+    - name: Deploy to VPS
       run: |
         ssh root@157.173.218.79 << 'EOF'
-          cd /path_to_your_project
-          npm install
-          pm2 restart all  # For Node.js projects using PM2
+          cd /path/to/your/application
+          git pull origin main  # Or rsync/scp the code if you're not using git on the server
+          npm install  # Install dependencies on the server
+          npm run build  # If necessary
+          pm2 restart all  # Restart the application (if using pm2)
         EOF
