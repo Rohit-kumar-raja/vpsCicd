@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy to EC2
 
 on:
   push:
@@ -10,23 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2.4.0  # Specify the exact version
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-    - name: Install SSH key
-      uses: shimataro/ssh-key-action@v2
+    - name: Install SSH
+      run: sudo apt-get install openssh-client
+
+    - name: SSH into EC2 instance
+      uses: appleboy/ssh-action@master
       with:
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        known_hosts: '157.173.218.79'
-
-    - name: Copy files via SSH
-      run: |
-        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ root@157.173.218.79:/path_to_your_project
-
-    - name: SSH and execute deployment
-      run: |
-        ssh root@157.173.218.79 << 'EOF'
-          cd /path_to_your_project
-          npm install
-          pm2 restart all  # For Node.js projects using PM2
-        EOF
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        port: ${{ secrets.EC2_PORT }}
+        script: |
+         cd /var/www/html/codersmile/
+         sudo git pull origin main
+         pm2 reload codersmile
