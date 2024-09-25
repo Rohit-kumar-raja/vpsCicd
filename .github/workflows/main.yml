@@ -1,0 +1,32 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: 'vps_ip_address'
+
+    - name: Copy files via SSH
+      run: |
+        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ username@vps_ip_address:/path_to_your_project
+
+    - name: SSH and execute deployment
+      run: |
+        ssh username@vps_ip_address << 'EOF'
+          cd /path_to_your_project
+          npm install
+          pm2 restart all  # For Node.js projects using PM2
+        EOF

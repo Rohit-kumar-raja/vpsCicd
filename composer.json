@@ -1,0 +1,5 @@
+{
+    "require": {
+        "futurapay/sdk": "^1.0"
+    }
+}
