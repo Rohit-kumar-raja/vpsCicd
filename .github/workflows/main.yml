@@ -17,15 +17,15 @@ jobs:
       uses: shimataro/ssh-key-action@v2
       with:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        known_hosts: 'vps_ip_address'
+        known_hosts: '157.173.218.79'
 
     - name: Copy files via SSH
       run: |
-        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ username@vps_ip_address:/path_to_your_project
+        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ root@157.173.218.79:/path_to_your_project
 
     - name: SSH and execute deployment
       run: |
-        ssh username@vps_ip_address << 'EOF'
+        ssh root@157.173.218.79 << 'EOF'
           cd /path_to_your_project
           npm install
           pm2 restart all  # For Node.js projects using PM2
